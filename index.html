@@ -5,6 +5,15 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({ 
+      token: "3f14f702f74c45c4bbf0bf17bae80729"
+      // for more configuration options, see https://docs.trackjs.com
+    });
+  </script>
+  
   <title>Lab 9</title>
 
   <style>
@@ -83,6 +92,10 @@
       <button>Start Timer</button>
       <button>End Timer</button>
       <button>Console Trace</button>
+
+      <!-- Add new buttons for Custom Errors -->        
+      <button>Custom Error Demo</button>        
+
       <button>Trigger a Global Error</button>
     </section>
   </main>
@@ -101,7 +114,160 @@
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
     // Start your code here
-    // You may move this JS to another file if you wish
+    // You may move this JS to another file if you wis
+    window.addEventListener('DOMContentLoaded', () => {
+      // Grab all <button> elements inside #error-btns
+      const buttons = Array.from(document.querySelectorAll('#error-btns > button'));
+
+      // We will use these labels for console.count and console.time/timeEnd:
+      const COUNT_LABEL = 'DemoCountLabel';
+      const TIMER_LABEL = 'DemoTimer';
+
+      // Track whether a console.group() is open, so we can close it properly.
+      let isGroupOpen = false;
+      
+      // Console Log
+      buttons[0].addEventListener('click', () => {
+        console.log('This is a console log.');
+      });
+
+      // Console Error
+      buttons[1].addEventListener('click', () => {
+        try {
+          // Attempt to find an element that doesn’t exist
+          const missing = document.getElementById('some-nonexistent-id');
+          // If missing === null, the next line throws a error
+          missing.textContent = 'Updating text…';
+          console.log('Successfully updated the element.');
+        } catch (err) {
+          // If we get an error it should land here
+          console.error('Catch caught an error trying to update a missing element:', err.message);
+        } finally {
+          // Always runs, regardless of success or failure
+          console.log('Console Error button finished the try/catch demo.');
+        }
+      });
+
+      // Console Count
+      buttons[2].addEventListener('click', () => {
+        console.count(`${COUNT_LABEL}`);
+      });
+
+      // Console Warn
+      buttons[3].addEventListener('click', () => {
+        console.warn('This is a console warning.');
+      });
+
+
+      // Console Assert
+      buttons[4].addEventListener('click', () => {
+        console.assert(false, 'This is a console assertion error.');
+      });
+
+
+      // Console Clear
+      buttons[5].addEventListener('click', () => {
+        console.clear();
+        console.log('Console was cleared.');
+      });
+
+
+      // Console Dir
+      buttons[6].addEventListener('click', () => {
+        console.dir(document.body);
+      });
+
+
+      // Console dirxml
+      buttons[7].addEventListener('click', () => {
+        console.dirxml(document.body);
+      });
+
+
+      // Console Group Start
+      buttons[8].addEventListener('click', () => {
+        if (!isGroupOpen) {
+          console.group('Demo Group');
+          console.log('Inside demo group.');
+          isGroupOpen = true;
+        } else {
+          console.warn('A console.group is already open.');
+        }
+      });
+
+
+      // Console Group End
+      buttons[9].addEventListener('click', () => {
+        if (isGroupOpen) {
+          console.groupEnd();
+          console.log('Closed the console.group.');
+          isGroupOpen = false;
+        } else {
+          console.warn('No console.group is currently open.');
+        }
+      });
+
+
+      // Console Table
+      buttons[10].addEventListener('click', () => {
+        console.table(['row1', 'row2', 'row3']);
+      });
+
+
+      // Start Timer
+      buttons[11].addEventListener('click', () => {
+        console.time(TIMER_LABEL);
+        console.log(`Timer "${TIMER_LABEL}" started.`);
+      });
+
+
+      // “End Timer”
+
+      buttons[12].addEventListener('click', () => {
+        console.timeEnd(TIMER_LABEL);
+      });
+
+      
+      // Console Trace
+      buttons[13].addEventListener('click', () => {
+        function stepA() { stepB(); }
+        function stepB() { stepC(); }
+        function stepC() { console.trace('This is a stack trace.'); }
+        stepA();
+      });
+
+
+      // Custom Errors
+      class ValidationError extends Error {
+        constructor(message) {
+          super(message);
+          this.name = 'ValidationError';
+        }
+      }
+
+      buttons[14].addEventListener('click', () => {
+        try {
+          // Immediately throw our custom error:
+          throw new ValidationError('This is a custom validation error.');
+        } catch (err) {
+          // Only one console.error line:
+          console.error(`Custom Error: (${err.name}): ${err.message}`);
+        } finally {
+          console.log('custom Error Demo finished.');
+        }
+      });
+      
+      window.addEventListener('error', (event) => {
+        console.log('Global Error Handler:', event.message);
+        console.log('Global Error Handler at:', `${event.filename}:${event.lineno}:${event.colno}`);
+        // TrackJS automatically picks up uncaught errors—no manual fetch needed
+      });
+
+      // Trigger an error by calling an undefined function:
+      buttons[15].addEventListener('click', () => {
+        undefinedFunction();
+      });
+    });
   </script>
 </body>
 
